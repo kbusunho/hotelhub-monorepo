@@ -11,7 +11,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/hotelhub';
 
 mongoose
