@@ -1,0 +1,32 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (backends)
+        run: |
+          cd packages/backend/hotelhub-backend-user && npm ci
+          cd -
+          cd packages/backend/hotelhub-backend-management && npm ci
+          cd -
+
+      - name: Run tests
+        run: echo "Add tests here or use npm test in each backend"
+
+      - name: Deploy to EC2 via CodeDeploy (placeholder)
+        run: echo "Implement CodeDeploy packaging and deployment here; use AWS credentials stored in secrets"

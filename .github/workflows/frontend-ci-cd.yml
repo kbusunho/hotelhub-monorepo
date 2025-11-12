@@ -1,0 +1,54 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          cd packages/frontend/hotelhub-frontend-user && npm ci
+          cd -
+          cd packages/frontend/hotelhub-frontend-business && npm ci
+          cd -
+          cd packages/frontend/hotelhub-frontend-admin && npm ci
+          cd -
+
+      - name: Build user frontend
+        run: |
+          cd packages/frontend/hotelhub-frontend-user && npm run build
+
+      - name: Build business frontend
+        run: |
+          cd packages/frontend/hotelhub-frontend-business && npm run build
+
+      - name: Build admin frontend
+        run: |
+          cd packages/frontend/hotelhub-frontend-admin && npm run build
+
+      - name: Deploy to S3
+        uses: appleboy/scp-action@master
+        with:
+          # Placeholder: replace with real deployment step or action
+          host: ${{ secrets.S3_HOST }}
+          username: ${{ secrets.S3_USER }}
+          port: 22
+          source: "packages/frontend/**/dist"
+          target: "/tmp/deploy"
+
+      - name: Invalidate CloudFront
+        run: echo "Replace with CloudFront invalidation step (aws cli)"
+        # Use AWS CLI with secrets to invalidate distribution
