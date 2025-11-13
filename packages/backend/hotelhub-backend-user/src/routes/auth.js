@@ -1,17 +1,24 @@
+// routes/auth.js
 import express from 'express';
 import { registerUser, loginUser } from '../controllers/authController.js';
-import { validateRegistration, validateLogin } from '../middleware/validators.js'; // (validators.js는 다음 단계에서 만듭니다)
+import { registerValidator, loginValidator } from '../middleware/validators.js';
 
 const router = express.Router();
 
-// @route   POST /api/auth/register
-// @desc    Register a new user
-// @access  Public
-router.post('/register', validateRegistration, registerUser);
+/*
+ * @route   POST /api/auth/register
+ * @desc    사용자 회원가입
+ * @access  Public
+ */
+// registerValidator가 먼저 실행되어 유효성 검사를 통과해야 registerUser가 실행됨
+router.post('/register', registerValidator, registerUser);
 
-// @route   POST /api/auth/login
-// @desc    Authenticate user & get token
-// @access  Public
-router.post('/login', validateLogin, loginUser);
+/*
+ * @route   POST /api/auth/login
+ * @desc    사용자 로그인
+ * @access  Public
+ */
+// loginValidator가 먼저 실행되어 유효성 검사를 통과해야 loginUser가 실행됨
+router.post('/login', loginValidator, loginUser);
 
 export default router;

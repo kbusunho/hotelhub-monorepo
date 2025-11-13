@@ -1,36 +1,35 @@
+// controllers/authController.js
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-import { validationResult } from 'express-validator';
+import dotenv from 'dotenv';
 
-// JWT 토큰 생성 유틸리티
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// JWT 토큰 생성 헬퍼 함수
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, JWT_SECRET, {
+    expiresIn: '1d', // 토큰 유효기간 1일
   });
 };
 
-/**
- * @desc    Register a new user
+/*
  * @route   POST /api/auth/register
+ * @desc    사용자 회원가입
  * @access  Public
  */
 export const registerUser = async (req, res) => {
-  // (From image: Express-validator)
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { name, email, password } = req.body;
 
   try {
-    // 1. Check if user already exists
+    // 1. 이메일 중복 확인
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ errors: [{ msg: '이미 가입된 이메일입니다.' }] });
     }
 
-    // 2. Create new user (password will be hashed by pre-save hook in User.js)
+    // 2. 새 사용자 생성 (비밀번호는 User.js의 pre('save') 훅에서 자동 암호화됨)
     user = new User({
       name,
       email,
@@ -39,63 +38,63 @@ export const registerUser = async (req, res) => {
 
     await user.save();
 
-    // 3. Generate token and send response
+    // 3. JWT 토큰 생성
     const token = generateToken(user._id);
 
+    console.log(`신규 사용자 등록: ${email}`);
     res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: token,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      }
     });
 
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Server error during registration' });
+  } catch (err) {
+    console.error('registerUser 컨트롤러 오류:', err.message);
+    res.status(500).send('서버 오류');
   }
 };
 
-/**
- * @desc    Authenticate user & get token
+/*
  * @route   POST /api/auth/login
+ * @desc    사용자 로그인
  * @access  Public
  */
 export const loginUser = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { email, password } = req.body;
 
   try {
-    // 1. Check if user exists
+    // 1. 이메일로 사용자 확인
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials (email)' });
+      return res.status(400).json({ errors: [{ msg: '이메일 또는 비밀번호가 유효하지 않습니다.' }] });
     }
 
-    // 2. Check password
-    // (User.js에 정의한 matchPassword 메소드 사용)
-    const isMatch = await user.matchPassword(password);
+    // 2. 비밀번호 비교 (User.js의 comparePassword 메소드 사용)
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials (password)' });
+      return res.status(400).json({ errors: [{ msg: '이메일 또는 비밀번호가 유효하지 않습니다.' }] });
     }
 
-    // 3. Generate token and send response
+    // 3. JWT 토큰 생성
     const token = generateToken(user._id);
 
+    console.log(`사용자 로그인: ${email}`);
     res.status(200).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: token,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      }
     });
 
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).json({ message: 'Server error during login' });
+  } catch (err) {
+    console.error('loginUser 컨트롤러 오류:', err.message);
+    res.status(500).send('서버 오류');
   }
 };
