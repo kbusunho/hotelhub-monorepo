@@ -1,5 +1,5 @@
 // packages/backend/hotelhub-backend-management/src/controllers/businessController.js
-import Hotel from '../../hotelhub-backend-user/src/models/Hotel.js'; // Hotel 모델 공유
+import Hotel from '../models/Hotel.js';
 
 /*
  * @route   POST /business/api/hotels

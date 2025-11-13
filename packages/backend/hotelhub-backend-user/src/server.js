@@ -10,8 +10,9 @@ import hotelRoutes from './routes/hotels.js';
 // import authRoutes from './routes/auth.js';
 // import bookingRoutes from './routes/bookings.js';
 
-// .env 파일 로드
-dotenv.config();
+// .env 파일 로드 (.env.dev 또는 .env 사용)
+const envFile = process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev';
+dotenv.config({ path: envFile });
 
 const app = express();
 const PORT = process.env.PORT || 3000;

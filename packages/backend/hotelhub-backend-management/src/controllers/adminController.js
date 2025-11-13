@@ -1,6 +1,6 @@
 // packages/backend/hotelhub-backend-management/src/controllers/adminController.js
-import User from '../../hotelhub-backend-user/src/models/User.js';
-import Hotel from '../../hotelhub-backend-user/src/models/Hotel.js';
+import User from '../models/User.js';
+import Hotel from '../models/Hotel.js';
 
 /*
  * @route   GET /admin/api/users

@@ -8,8 +8,9 @@ import helmet from 'helmet';
 // 라우트 파일 임포트
 import apiRoutes from './routes/apiRoutes.js';
 
-// .env 파일 로드 (user 백엔드와 동일한 .env 파일을 공유할 수 있음)
-dotenv.config();
+// .env 파일 로드 (.env.dev 또는 .env.prod 사용)
+const envFile = process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev';
+dotenv.config({ path: envFile });
 
 const app = express();
 // User 백엔드(3000)와 다른 포트 사용
