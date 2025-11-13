@@ -207,11 +207,24 @@ const UserView = () => {
   const handleSearch = () => {
     setIsLoading(true);
     setSelectedHotel(null); // 검색 시 상세 뷰 닫기
-    // 실제 앱: const res = await axios.get('/api/hotels', { params: {...} });
-    setTimeout(() => {
-      setHotels(mockHotels);
-      setIsLoading(false);
-    }, 500); // 로딩 스피너 시뮬레이션
+    // 실제 API가 있으면 호출, 없으면 mock 사용
+    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api';
+    fetch(`${apiBase}/hotels`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error('API 응답 오류');
+        const data = await res.json();
+        // API가 mock 구조가 아닐 수 있으므로 안전하게 처리
+        if (Array.isArray(data) && data.length > 0) {
+          setHotels(data);
+        } else {
+          setHotels(mockHotels);
+        }
+      })
+      .catch(() => {
+        // 네트워크 오류나 CORS 등 문제 발생 시 mock 사용
+        setHotels(mockHotels);
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
